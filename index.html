@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <title>Babylon.js sample code</title>
+
+        <!-- Babylon.js -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
+        <script src="https://assets.babylonjs.com/generated/Assets.js"></script>
+        <script src="https://preview.babylonjs.com/ammo.js"></script>
+        <script src="https://preview.babylonjs.com/cannon.js"></script>
+        <script src="https://preview.babylonjs.com/Oimo.js"></script>
+        <script src="https://preview.babylonjs.com/earcut.min.js"></script>
+        <script src="https://preview.babylonjs.com/babylon.js"></script>
+        <script src="https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+        <script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+        <script src="https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+        <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+        <script src="https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+        <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
+        <script src="https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
+
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+        </style>
+    </head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+    <script>
+        var canvas = document.getElementById("renderCanvas");
+
+        var startRenderLoop = function (engine, canvas) {
+            engine.runRenderLoop(function () {
+                if (sceneToRender && sceneToRender.activeCamera) {
+                    sceneToRender.render();
+                }
+            });
+        }
+
+        var engine = null;
+        var scene = null;
+        var sceneToRender = null;
+        var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: false}); };
+        var createScene = function () {
+        
+            // This creates a basic Babylon Scene object (non-mesh)
+            var scene = new BABYLON.Scene(engine);
+            var gravityVector = new BABYLON.Vector3(0, -9.81, 0);
+            var physicsPlugin = new BABYLON.CannonJSPlugin();
+            scene.enablePhysics(gravityVector, physicsPlugin);
+        
+            // Our built-in 'ground' shape. Params: name, width, depth, subdivs, scene
+            // var ground = BABYLON.Mesh.CreateGround("ground1", 24, 24, 1, scene);
+        
+            var ground = BABYLON.Mesh.CreateBox("ground", 24, scene);
+            ground.scaling = new BABYLON.Vector3(1, .02, 1);
+            ground.position = new BABYLON.Vector3(0, -1, 0);
+            var groundMaterial = new BABYLON.StandardMaterial("ground", scene);
+            groundMaterial.diffuseColor = new BABYLON.Color3(0.81, 0.81, 0.81);
+            ground.material = groundMaterial;
+        
+        
+        
+        
+            // function border(){
+            //     var box = BABYLON.MeshBuilder.CreateBox("box", {size: 1}, scene);
+            //     this.position = new position(0,1,0);
+            // }
+        
+            // var border1 = new border();
+            // var border2 = new border();
+            // var border3 = new border();
+        
+            // camera
+            var camera = new BABYLON.ArcRotateCamera("camera1", 0, 0, 0, new BABYLON.Vector3(0, 0, 0), scene);
+            camera.setPosition(new BABYLON.Vector3(10.253, 5.82251, -9.45717));
+            camera.attachControl(canvas, true);
+        
+            // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
+            var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
+        
+            // Default intensity is 1. Let's dim the light a small amount
+            light.intensity = 0.7;
+        
+            // Our built-in 'sphere' shape. Params: name, subdivs, size, scene
+            // var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {}, scene);
+            var box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
+        
+            // Variable for loop duration
+            // var loopAmount = 20;
+        
+            scene.onKeyboardObservable.add((kbInfo) => {
+                switch (kbInfo.type) {
+                    case BABYLON.KeyboardEventTypes.KEYDOWN:
+                        switch (kbInfo.event.key) {
+                            case "a":
+                            case "A":
+                                // for (var i = 0; i < loopAmount; i++){
+                                   box.position.x -= 0.1; 
+                                //    yield;
+                                // }
+                                // sphere.position.x -= 0.1;
+                                // sphere.rotation.y = 3;
+                                break
+                            case "d":
+                            case "D":
+                                box.position.x += 0.1;
+                                break
+                            case "w":
+                            case "W":
+                                box.position.z += 0.1;
+                                break
+                            case "s":
+                            case "S":
+                                box.position.z -= 0.1;
+                                break
+                            case "q":
+                            case "Q":
+                                box.rotation.y -= 0.1;
+                                break
+                            case "e":
+                            case "E":
+                                box.rotation.y += 0.1;
+                                break
+                        }
+                        break;
+                }
+            });
+        
+            return scene;
+        
+        };
+                window.initFunction = async function() {
+                    
+                    
+                    var asyncEngineCreation = async function() {
+                        try {
+                        return createDefaultEngine();
+                        } catch(e) {
+                        console.log("the available createEngine function failed. Creating the default engine instead");
+                        return createDefaultEngine();
+                        }
+                    }
+
+                    window.engine = await asyncEngineCreation();
+        if (!engine) throw 'engine should not be null.';
+        startRenderLoop(engine, canvas);
+        window.scene = createScene();};
+        initFunction().then(() => {sceneToRender = scene                    
+        });
+
+        // Resize
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });
+    </script>
+</body>
+</html>
